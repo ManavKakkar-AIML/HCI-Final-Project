@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComfortNest Heater Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(to right, #ff512f, #dd2476);
+            color: white;
+            padding: 20px;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            color: black;
+            padding: 20px;
+            border-radius: 10px;
+            width: 400px;
+            margin: auto;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .slider {
+            width: 100%;
+            accent-color: #e67e22;
+        }
+        .modes button, .off-switch {
+            padding: 10px;
+            margin: 5px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        .modes button:hover, .off-switch:hover {
+            transform: scale(1.1);
+        }
+        .eco { background: green; color: white; }
+        .comfort { background: orange; color: white; }
+        .boost { background: red; color: white; }
+        .info-box {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        #timer {
+            font-size: 18px;
+            font-weight: bold;
+            color: red;
+        }
+        .off-switch {
+            background: black;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>ComfortNest Heater</h2>
+        <p>Set Temperature: <span id="tempValue">22</span>°C</p>
+        <input type="range" min="10" max="30" value="22" class="slider" id="tempSlider">
+        
+        <h3>Energy Usage</h3>
+        <p id="energyUsage">0 kWh</p>
+        
+        <h3>Select Mode</h3>
+        <div class="modes">
+            <button class="eco" onclick="setMode('Eco')">Eco</button>
+            <button class="comfort" onclick="setMode('Comfort')">Comfort</button>
+            <button class="boost" onclick="setMode('Boost')">Boost</button>
+        </div>
+        
+        <div class="info-box">
+            <h4>Current Mode: <span id="currentMode">None</span></h4>
+            <p>Heater Status: <span id="heaterStatus">Off</span></p>
+            <p>Time Left: <span id="timer">--</span></p>
+        </div>
+        
+        <button class="off-switch" onclick="turnOffHeater()">Turn Off</button>
+    </div>
+    
+    <script>
+        let timer;
+
+        function startTimer(seconds) {
+            let countdown = seconds;
+            document.getElementById("timer").innerText = formatTime(countdown);
+            
+            timer = setInterval(() => {
+                countdown--;
+                document.getElementById("timer").innerText = formatTime(countdown);
+                
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    turnOffHeater();
+                }
+            }, 1000);
+        }
+
+        function formatTime(seconds) {
+            let minutes = Math.floor(seconds / 60);
+            let secs = seconds % 60;
+            return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        document.getElementById("tempSlider").addEventListener("input", function() {
+            document.getElementById("tempValue").innerText = this.value;
+            updateEnergyUsage(this.value);
+        });
+
+        function setMode(mode) {
+            clearInterval(timer);
+            let temp, duration;
+            
+            if (mode === 'Eco') {
+                temp = 18;
+                duration = 60 * 60;
+            } else if (mode === 'Comfort') {
+                temp = 23;
+                duration = 45 * 60;
+            } else if (mode === 'Boost') {
+                temp = 28;
+                duration = 30 * 60;
+                setTimeout(() => setMode('Comfort'), 1800000);
+            }
+            
+            document.getElementById("tempValue").innerText = temp;
+            document.getElementById("tempSlider").value = temp;
+            document.getElementById("currentMode").innerText = mode;
+            document.getElementById("heaterStatus").innerText = "On";
+            updateEnergyUsage(temp);
+            startTimer(duration);
+            alert("Mode set to " + mode + " with temperature " + temp + "°C");
+        }
+
+        function updateEnergyUsage(temp) {
+            let usage = (temp - 10) * 0.5; 
+            document.getElementById("energyUsage").innerText = usage.toFixed(2) + " kWh";
+        }
+
+        function turnOffHeater() {
+            clearInterval(timer);
+            document.getElementById("heaterStatus").innerText = "Off";
+            document.getElementById("currentMode").innerText = "None";
+            document.getElementById("tempValue").innerText = "--";
+            document.getElementById("tempSlider").value = 10;
+            document.getElementById("timer").innerText = "--";
+            alert("Heater turned off manually.");
+        }
+    </script>
+    
+    <div class='safety-info' style='position: absolute; bottom: 10px; left: 10px; font-size: 12px; text-align: left; color: white; background: rgba(0,0,0,0.6); padding: 10px; border-radius: 5px;'>
+        <p><strong>⚠ Safety Precautions:</strong></p>
+        <ul>
+            <li>Do not cover the heater while in use.</li>
+            <li>Keep away from flammable materials.</li>
+            <li>Ensure proper ventilation in the room.</li>
+            <li>Do not leave unattended for long periods.</li>
+            <li>Keep out of reach of children.</li>
+            <li>Use only on a stable, heat-resistant surface.</li>
+        </ul>
+        <p style='text-align: right;'>✔ Certified Safety Standard</p>
+    </div>
+</body>
+</html>
